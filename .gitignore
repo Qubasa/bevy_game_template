@@ -1,5 +1,7 @@
 target/
+.direnv
 .idea/
 .DS_Store
-
+alsa
+xkb
 dist/
