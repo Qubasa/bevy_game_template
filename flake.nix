@@ -38,9 +38,10 @@
             };
       };
 
-      devShells = forEachSupportedSystem ({ pkgs }: {
-        default = pkgs.mkShell {
-          packages = with pkgs; [
+      devShells = forEachSupportedSystem ({ pkgs }:
+        let
+          lib = inputs.nixpkgs.lib;
+          deps = with pkgs; [
             rustToolchain
             openssl
             pkg-config
@@ -52,16 +53,20 @@
             cargo-watch
             libxkbcommon.out
             libudev-zero
-            alsa-lib
+            alsa-lib-with-plugins
             rust-analyzer
+            wayland
+            vulkan-loader
+            xorg.libXrandr
+            udev
           ];
-
-          shellHook = ''
-            mkdir -p target/debug/deps
-            ln -sf "${pkgs.libxkbcommon}/lib/libxkbcommon-x11.so" target/debug/deps/libxkbcommon-x11.so
-          '';
+        in
+       {
+        default = pkgs.mkShell {
+          buildInputs = deps;
 
           env = {
+            LD_LIBRARY_PATH = lib.makeLibraryPath deps;
             # Required by rust-analyzer
             RUST_SRC_PATH = "${pkgs.rustToolchain}/lib/rustlib/src/rust/library";
           };
